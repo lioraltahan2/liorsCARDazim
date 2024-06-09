@@ -5,13 +5,24 @@ import struct
 
 
 def run_server(ip, port):
-    conn = socket.socket()
+    print('Running server')
     serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serv.bind((ip, port))
+    try:
+        serv.bind((ip, port))
+    except:
+        print('Could not bind socket')
+        exit(-1)
     serv.listen(1)
     while 1:
         conn, addr = serv.accept()
-        data_length = struct.unpack('>', conn.recv(4096))
+        data_length = struct.unpack('N', conn.recv(8))[0]
+        recvd_data = ""
+        while len(recvd_data) != data_length:
+            new_data = conn.recv(data_length)
+            for b in struct.unpack('<' + 's' * len(new_data), new_data):
+                recvd_data += b.decode('utf8')
+        print("Received data: " + recvd_data)
+        conn.close()
 
 
 def get_args():
@@ -32,6 +43,7 @@ def main():
     try:
         run_server(args.ip, args.port)
         print('Done.')
+        return 0
     except Exception as error:
         print(f'ERROR: {error}')
         return 1

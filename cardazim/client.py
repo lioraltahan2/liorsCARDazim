@@ -4,16 +4,16 @@ import socket
 import struct
 
 
-def computes_len_data(len_data, max_len=4096):
-
-
 def send_data(server_ip, server_port, data):
     print('Sending message...')
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((server_ip, server_port))
-    little_endian_data = struct.format('<', data)
-    len_data = struct.format('<', (uint32_t) len(little_endian_data))
-    conn.send(len(len_data + little_endian_data))
+    len_data = struct.pack('N', len(data))
+    conn.send(len_data)
+    little_endian_data = struct.pack(
+        '<' + 's' * len(data), *[b.encode('utf8') for b in data])
+    conn.send(little_endian_data)
+    conn.close()
 
 
 def get_args():
@@ -35,6 +35,7 @@ def main():
     try:
         send_data(args.server_ip, args.server_port, args.data)
         print('Done.')
+        return 0
     except Exception as error:
         print(f'ERROR: {error}')
         return 1
