@@ -2,18 +2,15 @@ import argparse
 import sys
 import socket
 import struct
+from connection import Connection
 
 
 def send_data(server_ip, server_port, data):
     print('Sending message...')
-    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn.connect((server_ip, server_port))
-    len_data = struct.pack('N', len(data))
-    conn.send(len_data)
-    little_endian_data = struct.pack(
-        '<' + 's' * len(data), *[b.encode('utf8') for b in data])
-    conn.send(little_endian_data)
-    conn.close()
+    with Connection.connect(server_ip, server_port) as conn:
+        little_endian_data = struct.pack(
+            '<' + 's' * len(data), *[b.encode('utf8') for b in data])
+        conn.send_message(little_endian_data)
 
 
 def get_args():
