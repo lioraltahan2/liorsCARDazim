@@ -1,13 +1,9 @@
 import argparse
 import sys
-import socket
 import struct
 import threading
 from connection import Connection
 from listener import Listener
-import time
-
-lock = threading.Lock()
 
 
 def handle_connection(conn):
@@ -15,7 +11,6 @@ def handle_connection(conn):
         Gets a connection to a Client
         Take message from the client and prints it
     '''
-    time.sleep(10)
     new_data = conn.recieve_message()
     recvd_data = ""
     for b in struct.unpack('<' + 's' * len(new_data), new_data):

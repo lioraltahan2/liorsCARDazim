@@ -13,7 +13,7 @@ class Connection:
         self.conn = connection
 
     def __repr__(self):
-        return self.conn.__repr__()
+        return "<Connection from " + str(self.conn.getsockname()) + " to " + str(self.conn.getpeername())
 
     def __enter__(self):
         return self
@@ -44,7 +44,7 @@ class Connection:
                 recvd_data.append(b)
         return bytes(recvd_data)
 
-    @classmethod
+    @ classmethod
     def connect(cls, host, port):
         '''
             Return a connection with socket connected to the given host & port
