@@ -1,16 +1,17 @@
 import argparse
 import sys
 import socket
-import struct
 from connection import Connection
 from cards import Card
 from crypt_image import CryptImage
+
+key = 'super secret key'
 
 
 def send_data(server_ip, server_port, name, creator, path, riddle, solution):
     card = Card.create_from_path(name, creator, path, riddle, solution)
     print('Sending ' + str(card))
-    card.image.encrypt('super secret key')
+    card.image.encrypt(key)
     with Connection.connect(server_ip, server_port) as conn:
         conn.send_message(card.serialize())
 
