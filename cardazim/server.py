@@ -4,6 +4,8 @@ import struct
 import threading
 from connection import Connection
 from listener import Listener
+from cards import Card
+from crypt_image import CryptImage
 
 
 def handle_connection(conn):
@@ -12,11 +14,9 @@ def handle_connection(conn):
         Take message from the client and prints it
     '''
     new_data = conn.recieve_message()
-    recvd_data = ""
-    for b in struct.unpack('<' + 's' * len(new_data), new_data):
-        recvd_data += b.decode('utf8')
-    print("Received data: " + recvd_data)
     conn.close()
+    recvd_card = Card.deserialize(new_data)
+    print("Received " + str(recvd_card))
 
 
 def run_server(ip, port):

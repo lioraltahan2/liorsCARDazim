@@ -3,14 +3,16 @@ import sys
 import socket
 import struct
 from connection import Connection
+from cards import Card
+from crypt_image import CryptImage
 
 
-def send_data(server_ip, server_port, data):
-    print('Sending message...')
+def send_data(server_ip, server_port, name, creator, path, riddle, solution):
+    card = Card.create_from_path(name, creator, path, riddle, solution)
+    print('Sending ' + str(card))
+    card.image.encrypt('super secret key')
     with Connection.connect(server_ip, server_port) as conn:
-        little_endian_data = struct.pack(
-            '<' + 's' * len(data), *[b.encode('utf8') for b in data])
-        conn.send_message(little_endian_data)
+        conn.send_message(card.serialize())
 
 
 def get_args():
@@ -19,8 +21,16 @@ def get_args():
                         help='the server\'s ip')
     parser.add_argument('server_port', type=int,
                         help='the server\'s port')
-    parser.add_argument('data', type=str,
-                        help='the data')
+    parser.add_argument('name', type=str,
+                        help='the cards name')
+    parser.add_argument('creator', type=str,
+                        help='the cards name')
+    parser.add_argument('path', type=str,
+                        help='the path to the image')
+    parser.add_argument('riddle', type=str,
+                        help='the riddle')
+    parser.add_argument('solution', type=str,
+                        help='the solution for the riddle')
     return parser.parse_args()
 
 
@@ -30,7 +40,8 @@ def main():
     '''
     args = get_args()
     try:
-        send_data(args.server_ip, args.server_port, args.data)
+        send_data(args.server_ip, args.server_port, args.name,
+                  args.creator, args.path, args.riddle, args.solution)
         print('Done.')
         return 0
     except Exception as error:
