@@ -1,5 +1,6 @@
 from cards import Card
 from crypt_image import CryptImage
+from card_driver import DataBaseDriver
 import json
 from PIL import Image
 import os
@@ -7,36 +8,40 @@ import os
 
 class CardManager:
 
+    def __init__(self, database_url: str, images_dir: str):
+        self.driver = self.get_driver(database_url)
+        self.images_dir = images_dir
+
+    def get_driver(self, database_url):
+        return DataBaseDriver(database_url)
+
     def get_identifier(self, card):
         return "{}/{}".format(card.creator, card.name)
 
-    def save(self, card: Card, dir_path: str):
-        dictionary = {"card name": card.name,
+    def save(self, card: Card):
+        dictionary = {"identifier": self.get_identifier(card),
+                      "card name": card.name,
                       "card creator": card.creator,
                       "card riddle": card.riddle,
                       "card solution": card.solution,
-                      "image path": "{}/{}/image.jpg".format(dir_path, self.get_identifier(card))}
-        json_object = json.dumps(dictionary, indent=5)
+                      "image path": "{}/{}/image.png".format(self.images_dir, self.get_identifier(card))}
+        self.driver.Save(dictionary)
         path = os.path.normpath(
-            "{}/{}".format(dir_path, self.get_identifier(card)))
-        print(path)
+            "{}/{}".format(self.images_dir, self.get_identifier(card)))
         try:
             os.makedirs(path)
         except:
             pass
-        with open("{}/{}/metadata.json".format(dir_path, self.get_identifier(card)), "w") as json_file:
-            json_file.write(json_object)
         card.image.image.save(
-            "{}/{}/image.png".format(dir_path, self.get_identifier(card)))
+            "{}/{}/image.png".format(self.images_dir, self.get_identifier(card)))
 
-    def load(self, identifier: str, dir_path: str):
-        json_object = None
-        with open("{}/{}/metadata.json".format(dir_path, identifier), 'r') as openfile:
-            json_object = json.load(openfile)
-        name = json_object["card name"]
-        creator = json_object["card creator"]
-        riddle = json_object["card riddle"]
-        solution = json_object["card solution"]
-        image_path = json_object["image path"]
+    def load(self, identifier: str):
+        dict = self.driver.Load(identifier)
+        name = dict["card name"]
+        creator = dict["card creator"]
+        riddle = dict["card riddle"]
+        solution = dict["card solution"]
+        image_path = dict["image path"]
+        print(image_path)
         return Card.create_from_path(
             name, creator, image_path, riddle, solution)
