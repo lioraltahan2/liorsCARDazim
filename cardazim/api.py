@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
-from server import run_server
 from card_manager import CardManager
 import argparse
 from card_driver import CardDriver
 from cards import Card
+from bson.json_util import dumps
 app = Flask(__name__)
 
 
@@ -16,17 +16,17 @@ def run_api_server(host, port, database_url):
 
 @app.route('/creators')
 def get_creators():
-    return manager.driver.GetCreators()
+    return dumps(list(manager.driver.GetCreators()))
 
 
 @app.route('/creators/<string:creator_name>/cards/unsolved')
 def get_creator_unsolved(creator_name):
-    return manager.driver.GetCreatorCards(creator_name, solved=False)
+    return dumps(list(manager.driver.GetCreatorCards(creator_name, solved=False)))
 
 
 @app.route('/creators/<string:creator_name>/cards/solved')
 def get_creator_solved(creator_name):
-    return manager.driver.GetCreatorCards(creator_name, solved=False)
+    return dumps(list(manager.driver.GetCreatorCards(creator_name, solved=True)))
 
 
 @app.route('/creators/<string:creator_name>/cards/<string:card_name>')
@@ -34,15 +34,15 @@ def get_card_by_creator_and_name(creator_name, card_name):
     card = manager.load(
         manager.get_identifier_by_creator_and_name(creator_name, card_name))
     dictionary = {"identifier": manager.get_identifier(card),
-                  "card name": card.name,
-                  "card creator": card.creator,
-                  "card riddle": card.riddle,
-                  "card solution": card.solution,
+                  "name": card.name,
+                  "creator": card.creator,
+                  "riddle": card.riddle,
+                  "solution": card.solution,
                   "image path": "{}/{}/image.png".format(manager.images_dir, manager.get_identifier(card))}
     return dictionary
 
 
-@app.route('/creators/<string:creator_name>/cards/<string:card_name>/image.jpg')
+@app.route('/creators/<string:creator_name>/cards/<string:card_name>/image.png')
 def get_image_by_creator_and_name(creator_name, card_name):
     card: Card = manager.load(
         manager.get_identifier_by_creator_and_name(creator_name, card_name))
@@ -51,7 +51,7 @@ def get_image_by_creator_and_name(creator_name, card_name):
 
 @app.route('/cards/find/<string:field>/<string:lookup_string>')
 def find_cards_with_str(field, lookup_string):
-    return manager.driver.get_cards_with_str(field, lookup_string)
+    return dumps(list((manager.driver.get_cards_with_str(field, lookup_string))))
 
 
 @app.route('/cards/creator/<string:creator_name>/cards/<string:card_name>/solve/<string:solution>')

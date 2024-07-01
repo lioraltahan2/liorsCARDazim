@@ -37,7 +37,7 @@ class DataBaseDriver(CardDriver):
         return self.cards.find_one({'identifier': identifier})
 
     def GetCreators(self):
-        return list(self.cards.find({}, {'_id': 0, 'creator': 1}))
+        return self.cards.find({}, {'_id': 0, 'creator': 1})
 
     def GetCreatorCards(self, creator, solved=None):
         if solved == True:
@@ -47,7 +47,7 @@ class DataBaseDriver(CardDriver):
         return self.cards.find({'creator': creator})
 
     def get_cards_with_str(self, field, lookup_string):
-        return list(self.cards.find({"$contains": {field: lookup_string}}))
+        return self.cards.find({field: {'$regex': lookup_string}})
 
     def add_solution(self, identifier, solution):
         self.cards.updateOne({"identifier": identifier}, {"$set": {"solution": solution}}
