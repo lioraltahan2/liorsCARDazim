@@ -17,13 +17,13 @@ class CardDriver(ABC):
     def GetCreators(self):
         pass
 
-    def GetCreatorCards(self, creator):
+    def GetCreatorCards(self, creator, solved):
         pass
 
 
 class DataBaseDriver(CardDriver):
     def __init__(self, url):
-        client = pymongo.MongoClient(url)
+        client: CardDriver = pymongo.MongoClient(url)
         self.cards = client["cardazim"].cards
 
     def Save(self, card):
@@ -37,7 +37,18 @@ class DataBaseDriver(CardDriver):
         return self.cards.find_one({'identifier': identifier})
 
     def GetCreators(self):
-        self.cards['creator']
+        return list(self.cards.find({}, {'_id': 0, 'creator': 1}))
 
-    def GetCreatorCards(self, creator):
-        self.cards.find({'creator': creator})
+    def GetCreatorCards(self, creator, solved=None):
+        if solved == True:
+            return self.cards.find({'creator': creator, 'solution': {"$ne": None}})
+        if solved == False:
+            return self.cards.find({'creator': creator, 'solution': None})
+        return self.cards.find({'creator': creator})
+
+    def get_cards_with_str(self, field, lookup_string):
+        return list(self.cards.find({"$contains": {field: lookup_string}}))
+
+    def add_solution(self, identifier, solution):
+        self.cards.updateOne({"identifier": identifier}, {"$set": {"solution": solution}}
+                             )
