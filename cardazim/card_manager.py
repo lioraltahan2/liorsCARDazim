@@ -18,12 +18,15 @@ class CardManager:
     def get_identifier(self, card):
         return "{}/{}".format(card.creator, card.name)
 
+    def get_identifier_by_creator_and_name(self, creator, name):
+        return "{}/{}".format(creator, name)
+
     def save(self, card: Card):
         dictionary = {"identifier": self.get_identifier(card),
-                      "card name": card.name,
-                      "card creator": card.creator,
-                      "card riddle": card.riddle,
-                      "card solution": card.solution,
+                      "name": card.name,
+                      "creator": card.creator,
+                      "riddle": card.riddle,
+                      "solution": card.solution,
                       "image path": "{}/{}/image.png".format(self.images_dir, self.get_identifier(card))}
         self.driver.Save(dictionary)
         path = os.path.normpath(
@@ -37,10 +40,10 @@ class CardManager:
 
     def load(self, identifier: str):
         dict = self.driver.Load(identifier)
-        name = dict["card name"]
-        creator = dict["card creator"]
-        riddle = dict["card riddle"]
-        solution = dict["card solution"]
+        name = dict["name"]
+        creator = dict["creator"]
+        riddle = dict["riddle"]
+        solution = dict["solution"]
         image_path = dict["image path"]
         print(image_path)
         return Card.create_from_path(

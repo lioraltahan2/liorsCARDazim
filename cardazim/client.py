@@ -5,13 +5,11 @@ from connection import Connection
 from cards import Card
 from crypt_image import CryptImage
 
-key = 'super secret key'
-
 
 def send_data(server_ip, server_port, name, creator, path, riddle, solution):
-    card = Card.create_from_path(name, creator, path, riddle, solution)
+    card = Card.create_from_path(name, creator, path, riddle, None)
     print('Sending ' + str(card))
-    card.image.encrypt(key)
+    card.image.encrypt(solution)
     with Connection.connect(server_ip, server_port) as conn:
         conn.send_message(card.serialize())
 
